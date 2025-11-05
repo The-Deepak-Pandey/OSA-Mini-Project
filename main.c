@@ -1,0 +1,121 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/utsname.h>
+#include <pwd.h>
+#include <ctype.h>
+
+#define MAX_COMMANDS 20
+#define MAX_HISTORY_DISPLAY 10
+#define MAX_ARGS 64
+#define MAX_LINE_LENGTH 1024
+
+char *history[MAX_COMMANDS];
+int history_count = 0;
+char previous_dir[MAX_LINE_LENGTH] = "";
+char home_dir_path[MAX_LINE_LENGTH];
+
+void print_shell_prompt() {
+    // Get username
+    struct passwd *p = getpwuid(getuid());
+    const char *username = p ? p->pw_name : "user";
+    // printf("Debug: Username: %s\n", username); // Debug line
+
+    // Get hostname
+    char hostname[256];
+    if(gethostname(hostname, sizeof(hostname)) != 0){
+        strcpy(hostname, "system");
+    }
+    // printf("Debug: Hostname: %s\n", hostname); // Debug line
+
+    // Get current working directory
+    char cwd[1024];
+    if(getcwd(cwd, sizeof(cwd)) == NULL){
+        perror("getcwd() error");
+        return;
+    }
+    // printf("Debug: Current Working Directory: %s\n", cwd); // Debug line
+
+
+    // Check if current directory is within home directory
+    char display_dir[1024];
+    if(strlen(home_dir_path) > 0 && strstr(cwd, home_dir_path) == cwd){
+        // if it is, replace home directory with '~'
+        snprintf(display_dir, sizeof(display_dir), "~%s", cwd + strlen(home_dir_path));
+    } else {
+        // else use the full path
+        strncpy(display_dir, cwd, sizeof(display_dir));
+    }
+
+    // print the formatted prompt
+    printf("<%s@%s:%s> ", username, hostname, display_dir);
+    fflush(stdout);
+}
+
+void execute_echo(char *args[]){
+    // loop through all tokens after "echo" and print them
+    for(int i = 1; args[i] != NULL; i++) {
+        printf("%s%s", args[i], args[i+1] ? " " : "");
+    }
+    printf("\n");
+}
+
+void execute_pwd() {
+    char cwd[1024];
+    if(getcwd(cwd, sizeof(cwd)) != NULL) {
+        printf("%s\n", cwd);
+    } else {
+        perror("pwd error");
+    }
+}
+
+void execute_cd(char *args[]) {
+    char curr_dir_before[1024];
+    if(getcwd(curr_dir_before, sizeof(curr_dir_before)) == NULL) {
+        perror("getcwd() error");
+        return;
+    }
+
+    char *target_dir;
+    // checking 2nd token (args[1])
+    if(args[1] == NULL || strcmp(args[1], "~") == 0) {
+        target_dir = home_dir_path; // case : cd or cd ~
+    } else if (strcmp(args[1], "-") == 0) {
+        if(strlen(previous_dir) == 0) {
+            fprintf(stderr, "cd: No previous directory yet\n");
+            return;
+        }
+        target_dir = previous_dir; // case : cd -
+        printf("%s\n", target_dir); // print the directory we are changing to
+    } else {
+        target_dir = args[1]; // case : cd <directory>
+    }
+
+    if(args[2] != NULL) {
+        fprintf(stderr, "cd: too many arguments\n");
+        return;
+    }
+
+    if(chdir(target_dir) != 0) {
+        perror("cd error");
+    } else {
+        // successfully changed directory
+        strcpy(previous_dir, curr_dir_before);
+    }
+}
+
+int main() {
+    while(1){
+        print_shell_prompt();
+        char *line = NULL;
+        size_t len = 0;
+
+        if(getline(&line, &len, stdin) == -1){
+            break; // exit on ctrl+d or error
+        }
+        free(line);
+    }
+    printf("\n");
+    return 0;
+}
