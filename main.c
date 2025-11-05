@@ -53,6 +53,44 @@ void print_shell_prompt() {
     fflush(stdout);
 }
 
+void load_history() {
+    char history_file_path[MAX_LINE_LENGTH];
+    snprintf(history_file_path, sizeof(history_file_path), "%s/.my_shell_history", home_dir_path);
+
+    FILE *file = fopen(history_file_path, "r");
+    if(file == NULL) {
+        return; // no history file yet
+    }
+
+    char line[MAX_LINE_LENGTH];
+    while(fgets(line, sizeof(line), file) != NULL && history_count < MAX_COMMANDS) {
+        line[strcspn(line, "\n")] = 0; // remove newline character
+        if(strlen(line) > 0) {
+            history[history_count] = strdup(line);
+            history_count++;
+        }
+    }
+    fclose(file);
+}
+
+void save_history() {
+    char history_file_path[MAX_LINE_LENGTH];
+    snprintf(history_file_path, sizeof(history_file_path), "%s/.my_shell_history", home_dir_path);
+
+    FILE *file = fopen(history_file_path, "w");
+    if(file == NULL) {
+        perror("Could not open history file for writing");
+        return;
+    }
+
+    for(int i = 0; i < history_count; i++) {
+        fprintf(file, "%s\n", history[i]);
+    }
+    fclose(file);
+}
+
+
+
 void execute_echo(char *args[]){
     // loop through all tokens after "echo" and print them
     for(int i = 1; args[i] != NULL; i++) {
@@ -103,6 +141,25 @@ void execute_cd(char *args[]) {
         // successfully changed directory
         strcpy(previous_dir, curr_dir_before);
     }
+}
+
+void execute(char *line) {
+    char *args[MAX_ARGS];
+    char *token;
+    int i = 0;
+
+    char *line_copy = strdup(line); // create a copy for history
+    line_copy[strcspn(line_copy, "\n")] = 0; // remove newline character for history
+
+    // Tokenize the input line
+    token = strtok(line, " \t\n"); // split by space, tab, newline
+    if(token == NULL) { // handle empty or whitespace-only input
+        free(line_copy);
+        return; // empty input
+    }
+
+    
+
 }
 
 int main() {
