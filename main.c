@@ -106,16 +106,27 @@ void execute_cd(char *args[]) {
 }
 
 int main() {
-    while(1){
-        print_shell_prompt();
-        char *line = NULL;
-        size_t len = 0;
+    
+    // get home directory path
+    const char *home = getenv("HOME");
+    if(home == NULL) {
+        struct passwd *p = getpwuid(getuid());
+        home = p ? p->pw_dir : "";
+    } 
+    strncpy(home_dir_path, home, sizeof(home_dir_path)-1);
+    home_dir_path[sizeof(home_dir_path)-1] = '\0';
 
-        if(getline(&line, &len, stdin) == -1){
-            break; // exit on ctrl+d or error
+    char *line = NULL;
+    size_t len = 0;
+    while(1) {
+        print_shell_prompt();
+
+        if(getline(&line, &len, stdin) == -1) {
+            break; // exit of ctrl+d
         }
-        free(line);
+
+        execute(line);
     }
-    printf("\n");
+
     return 0;
 }
