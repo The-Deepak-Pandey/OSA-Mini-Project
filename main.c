@@ -89,7 +89,34 @@ void save_history() {
     fclose(file);
 }
 
+void add_to_history(const char *command) {
+    if(command == NULL || strlen(command) == 0) {
+        return; // do not add empty commands
+    }
 
+    if(history_count > 0 && strcmp(history[history_count - 1], command) == 0) {
+        return; // do not add duplicate consecutive commands
+    }
+
+    if(history_count == MAX_COMMANDS) {
+        // overwrite the oldest command by shifting everything left
+        free(history[0]);
+        for(int i = 1; i < MAX_COMMANDS; i++) {
+            history[i - 1] = history[i];
+        }
+        history[MAX_COMMANDS - 1] = strdup(command);
+    } else {
+        history[history_count] = strdup(command);
+        history_count++;
+    }
+}
+
+void execute_history() {
+    int start = (history_count > MAX_HISTORY_DISPLAY) ? (history_count - MAX_HISTORY_DISPLAY) : 0;
+    for(int i = start; i < history_count; i++) {
+        printf("%s\n", history[i]);
+    }
+}
 
 void execute_echo(char *args[]){
     // loop through all tokens after "echo" and print them
@@ -158,7 +185,30 @@ void execute(char *line) {
         return; // empty input
     }
 
+    add_to_history(line_copy);
+    free(line_copy);
     
+    while(token != NULL && i < MAX_ARGS - 1) {
+        args[i++] = token;
+        token = strtok(NULL, " \t\n");
+    }
+
+    args[i] = NULL; // null-terminate the args array
+
+    if(strcmp(args[0], "exit") == 0) {
+        save_history();
+        exit(0);
+    } else if(strcmp(args[0], "echo") == 0) {
+        execute_echo(args);
+    } else if(strcmp(args[0], "pwd") == 0) {
+        execute_pwd();
+    } else if(strcmp(args[0], "cd") == 0) {
+        execute_cd(args);
+    } else if(strcmp(args[0], "history") == 0) {
+        execute_history();
+    } else {
+        fprintf(stderr, "%s: command not found\n", args[0]);
+    }
 
 }
 
@@ -172,6 +222,8 @@ int main() {
     } 
     strncpy(home_dir_path, home, sizeof(home_dir_path)-1);
     home_dir_path[sizeof(home_dir_path)-1] = '\0';
+
+    load_history();
 
     char *line = NULL;
     size_t len = 0;
