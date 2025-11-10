@@ -1,0 +1,6 @@
+a.out
+file_list.txt
+main.c
+OS_Mini-Project_Help_Document.pdf
+OS_Mini-Project.pdf
+README.md
