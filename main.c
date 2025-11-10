@@ -18,7 +18,24 @@ char *history[MAX_COMMANDS];
 int history_count = 0;
 char previous_dir[MAX_LINE_LENGTH] = "";
 char home_dir_path[MAX_LINE_LENGTH];
-pid_t foreground_pid = -1 // pid of the current foreground process
+pid_t foreground_pid = -1; // pid of the current foreground process
+
+// Signal handler for SIGINT (Ctrl+C)
+void handle_sigint(int sig) { 
+    if(foreground_pid > 0) {
+        kill(foreground_pid, SIGINT); // terminate the foreground child process
+        foreground_pid = -1;
+    }
+    printf("\n"); // move to new line after Ctrl+C
+}
+
+// to clean up zombie processes from background processes
+void handle_sigchld(int sig) {
+    int status;
+    while(waitpid(-1, &status, WNOHANG) > 0) {
+        // this loop reaps all terminated child processes
+    }
+}
 
 void print_shell_prompt() {
     // Get username
@@ -212,6 +229,9 @@ void execute(char *line) {
 }
 
 int main() {
+    // set up signal handlers
+    signal(SIGINT, handle_sigint); // handle Ctrl+C
+    signal(SIGCHLD, handle_sigchld); // handle terminated child processes
     
     // get home directory path
     const char *home = getenv("HOME");
@@ -236,6 +256,12 @@ int main() {
         execute(line);
 
         save_history();
+    }
+
+    free(line);
+    // free history memory
+    for(int i = 0; i < history_count; i++) {
+        free(history[i]);
     }
 
     return 0;
