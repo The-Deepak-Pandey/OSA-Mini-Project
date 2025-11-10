@@ -18,6 +18,7 @@ char *history[MAX_COMMANDS];
 int history_count = 0;
 char previous_dir[MAX_LINE_LENGTH] = "";
 char home_dir_path[MAX_LINE_LENGTH];
+pid_t foreground_pid = -1 // pid of the current foreground process
 
 void print_shell_prompt() {
     // Get username
