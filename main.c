@@ -243,63 +243,74 @@ void execute(char *line) {
         return; // no command to execute
     }
 
+    // 1. Handle built-ins that MUST run in the parent process
     if(strcmp(args[0], "exit") == 0) {
         save_history();
         exit(0);
-    } else if(strcmp(args[0], "echo") == 0) {
-        execute_echo(args);
-    } else if(strcmp(args[0], "pwd") == 0) {
-        execute_pwd();
     } else if(strcmp(args[0], "cd") == 0) {
         execute_cd(args);
-    } else if(strcmp(args[0], "history") == 0) {
-        execute_history();
-    } else {
-        // External Command Execution
-        pid_t pid = fork();
-        if (pid == -1) {
-            perror("fork error");
-            return;
-        } else if (pid == 0) {
-            // --- Child Process ---
-            // handle input/output redirection
-            if (input_file) {
-                int fd_in = open(input_file, O_RDONLY);
-                if (fd_in == -1) {
-                    perror("Open");
-                    exit(EXIT_FAILURE);
-                }
-                dup2(fd_in, STDIN_FILENO); // redirect stdin
-                close(fd_in);
-            }
-            if (output_file) {
-                int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-                if (fd_out == -1) {
-                    perror("Open");
-                    exit(EXIT_FAILURE);
-                }
-                dup2(fd_out, STDOUT_FILENO); // redirect stdout
-                close(fd_out);
-            }
+        return; // 'cd' is done, return to main loop
+    }
 
-            // Execute the command
+    // 2. Fork for all other commands (built-ins and external)
+    pid_t pid = fork();
+    if (pid == -1) {
+        perror("fork error");
+        return;
+    } 
+    
+    if (pid == 0) {
+        // --- CHILD PROCESS ---
+
+        // 3. Set up I/O redirection (happens for all child commands)
+        if (input_file) {
+            int fd_in = open(input_file, O_RDONLY);
+            if (fd_in == -1) {
+                perror("Open");
+                exit(EXIT_FAILURE);
+            }
+            dup2(fd_in, STDIN_FILENO); // redirect stdin
+            close(fd_in);
+        }
+        if (output_file) {
+            int fd_out = open(output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+            if (fd_out == -1) {
+                perror("Open");
+                exit(EXIT_FAILURE);
+            }
+            dup2(fd_out, STDOUT_FILENO); // redirect stdout
+            close(fd_out);
+        }
+
+        // 4. Check for child-run built-ins
+        if(strcmp(args[0], "echo") == 0) {
+            execute_echo(args);
+            exit(EXIT_SUCCESS); // Done, exit child
+        } else if(strcmp(args[0], "pwd") == 0) {
+            execute_pwd();
+            exit(EXIT_SUCCESS); // Done, exit child
+        } else if(strcmp(args[0], "history") == 0) {
+            execute_history();
+            exit(EXIT_SUCCESS); // Done, exit child
+        } else {
+            // 5. Not a built-in, run external command
             if (execvp(args[0], args) == -1) {
                 fprintf(stderr, "%s: command not found\n", args[0]);
                 exit(EXIT_FAILURE);
             }
+        }
+
+    } else {
+        // --- PARENT PROCESS ---
+        if (background) {
+            printf("Started backgound process [PID: %d]\n", pid); // print background process PID
         } else {
-            // --- Parent Process ---
-            if (background) {
-                printf("Started backgound process [PID: %d]\n", pid); // print background process PID
-            } else {
-                foreground_pid = pid; // set the foreground process PID
-                int status;
-                waitpid(pid, &status, 0); // wait for the foreground process to finish
-                foreground_pid = -1; // reset foreground PID
-            }
+            foreground_pid = pid; // set the foreground process PID
+            int status;
+            waitpid(pid, &status, 0); // wait for the foreground process to finish
+            foreground_pid = -1; // reset foreground PID
         }
     }
-
 }
 
 int main() {
