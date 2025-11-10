@@ -1,8 +1,0 @@
-hi
-cd -
-cd ..
-cd -
-echo oijoijoij
-history
-exi
-history

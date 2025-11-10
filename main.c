@@ -75,7 +75,9 @@ void print_shell_prompt() {
 }
 
 void load_history() {
-    FILE *file = fopen("./history.txt", "r");
+    char history_path[MAX_LINE_LENGTH];
+    snprintf(history_path, sizeof(history_path), "%s/.my_shell_history", home_dir_path);
+    FILE *file = fopen(history_path, "r");
 
     if(file == NULL) {
         return; // no history file yet
@@ -93,7 +95,9 @@ void load_history() {
 }
 
 void save_history() {
-    FILE *file = fopen("./history.txt", "w");
+    char history_path[MAX_LINE_LENGTH];
+    snprintf(history_path, sizeof(history_path), "%s/.my_shell_history", home_dir_path);
+    FILE *file = fopen(history_path, "w");
 
     if(file == NULL) {
         perror("Could not open history file for writing");
@@ -233,6 +237,7 @@ void execute(char *line) {
     }
 
     if(strcmp(args[0], "exit") == 0) {
+        save_history();
         exit(0);
     } else if(strcmp(args[0], "echo") == 0) {
         execute_echo(args);
@@ -312,17 +317,15 @@ int main() {
         print_shell_prompt();
 
         if(getline(&line, &len, stdin) == -1) {
+            printf("\n");
             break; // exit of ctrl+d
         }
 
         execute(line);
-
-        save_history();
     }
 
-    save_history();
-
     free(line);
+    save_history();
     // free history memory
     for(int i = 0; i < history_count; i++) {
         free(history[i]);
