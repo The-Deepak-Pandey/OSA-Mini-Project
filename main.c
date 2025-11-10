@@ -5,6 +5,9 @@
 #include <sys/utsname.h>
 #include <pwd.h>
 #include <ctype.h>
+#include <sys/wait.h>
+#include <fcntl.h>
+#include <signal.h>
 
 #define MAX_COMMANDS 20
 #define MAX_HISTORY_DISPLAY 10
