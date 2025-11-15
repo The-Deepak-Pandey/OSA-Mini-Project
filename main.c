@@ -19,8 +19,8 @@ pid_t foreground_pid = -1;
 
 int main() {
     // set up signal handlers
-    signal(SIGINT, handle_sigint);
-    signal(SIGCHLD, handle_sigchld);
+    signal(SIGINT, handle_sigint); // handle Ctrl+C
+    signal(SIGCHLD, handle_sigchld); // handle terminated child processes
     
     // get home directory path
     const char *home = getenv("HOME");
