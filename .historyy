@@ -1,12 +1,3 @@
-sleep 30 &
-ps -a
-sleep 30 &
-ps -a
-sleep 30 &
-ps -a
-sleep 30 &
-ps -a
-sleep 4 &
 okk
 ok
 [A[A
@@ -18,3 +9,12 @@ cd ..
 cd -
 sleep 30 &
 sleep 31 &
+echo oewij3ofij
+echo eoijfwoije
+echo eiejided
+echo hello
+sleep 1 &
+sleep 102 
+git add .
+git commit -m "sigint handled improved"
+git push
