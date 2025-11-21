@@ -69,7 +69,7 @@ void execute(char *line) {
     if (pid == 0) {
         // --- CHILD PROCESS ---
         if (background) {
-            setpgid(0, 0);
+            setpgid(0, 0); // this 
         }
         // 3. Set up I/O redirection (happens for all child commands)
         if (input_file) {
