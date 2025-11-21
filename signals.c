@@ -21,7 +21,7 @@ void handle_sigchld(int sig) {
         // find and remove from background_pids
         for (int i = 0; i < background_pid_count; i++) {
             if (background_pids[i] == pid) {
-                fprintf(stderr, "Background process %d finished.\n", pid);
+                fprintf(stderr, "\nBackground process %d finished.\n", pid);
                 re_prompt = 1;
                 // shift remaining pids to the left
                 for (int j = i; j < background_pid_count - 1; j++) {
