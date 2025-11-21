@@ -1,0 +1,6 @@
+g 
+grep dee file.txt
+grep dee < file.txt
+grep dee < file.txt > smt.txt
+cat smt.txt
+grep dee < file.txt >> smt.txt

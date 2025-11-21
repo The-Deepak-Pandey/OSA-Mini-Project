@@ -3,7 +3,7 @@
 void load_history() {
     char history_path[MAX_LINE_LENGTH]; 
     
-    snprintf(history_path, sizeof(history_path), "%s/.historyy", home_dir_path);
+    snprintf(history_path, sizeof(history_path), "%s/.history", home_dir_path);
     
     FILE *file = fopen(history_path, "r");
 
@@ -25,7 +25,7 @@ void load_history() {
 void save_history() {
     char history_path[MAX_LINE_LENGTH]; 
     
-    snprintf(history_path, sizeof(history_path), "%s/.historyy", home_dir_path);
+    snprintf(history_path, sizeof(history_path), "%s/.history", home_dir_path);
     
     FILE *file = fopen(history_path, "w");
 
