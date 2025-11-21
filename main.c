@@ -1,5 +1,5 @@
 // Includes all the headers for functions it calls
-#include "globals.h"    // Must be first for definitions
+#include "globals.h"    
 #include "signals.h"
 #include "history.h"
 #include "prompt.h"
@@ -14,6 +14,11 @@ int history_count = 0;
 char previous_dir[MAX_LINE_LENGTH] = "";
 char home_dir_path[MAX_LINE_LENGTH];
 pid_t foreground_pid = -1;
+// -------------------------------------
+// BACKGROUND PROCESS TRACKING
+// -------------------------------------
+pid_t background_pids[MAX_COMMANDS];
+int background_pid_count = 0;
 // -------------------------------------
 
 
@@ -48,6 +53,12 @@ int main() {
     // free history memory
     for(int i = 0; i < history_count; i++) {
         free(history[i]);
+    }
+
+    // Clean up any remaining background processes on exit
+    for (int i = 0; i < background_pid_count; i++) {
+        printf("Killed background process [PID: %d]\n", background_pids[i]);
+        kill(background_pids[i], SIGKILL);
     }
 
     return 0;

@@ -110,9 +110,13 @@ void execute(char *line) {
     } else {
         // --- PARENT PROCESS ---
         if (background) {
-            printf("Started backgound process [PID: %d]\n", pid); // print background process PID
+            printf("Started background process [PID: %d]\n", pid);
+            // Add to background process list
+            if (background_pid_count < MAX_COMMANDS) {
+                background_pids[background_pid_count++] = pid;
+            }
         } else {
-            foreground_pid = pid; // set the foreground process PID
+            foreground_pid = pid; // Set global foreground pid
             int status;
             waitpid(pid, &status, 0); // wait for the foreground process to finish
             foreground_pid = -1; // reset foreground PID

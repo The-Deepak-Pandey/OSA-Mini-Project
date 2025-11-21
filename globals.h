@@ -26,5 +26,11 @@ extern int history_count;
 extern char previous_dir[MAX_LINE_LENGTH];
 extern char home_dir_path[MAX_LINE_LENGTH];
 extern pid_t foreground_pid;
+// -------------------------------------
+// BACKGROUND PROCESS TRACKING
+// -------------------------------------
+extern pid_t background_pids[MAX_COMMANDS];
+extern int background_pid_count;
+// -------------------------------------
 
 #endif // GLOBALS_H
