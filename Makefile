@@ -1,5 +1,5 @@
 all:
-	gcc *.c 
+	gcc -w *.c 
 	./a.out
 
 clean:

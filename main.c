@@ -22,14 +22,11 @@ int main() {
     signal(SIGINT, handle_sigint); // handle Ctrl+C
     signal(SIGCHLD, handle_sigchld); // handle terminated child processes
     
-    // get home directory path
-    const char *home = getenv("HOME");
-    if(home == NULL) {
-        struct passwd *p = getpwuid(getuid());
-        home = p ? p->pw_dir : "";
-    } 
-    strncpy(home_dir_path, home, sizeof(home_dir_path)-1);
-    home_dir_path[sizeof(home_dir_path)-1] = '\0';
+    // get home directory path (the directory where the shell is invoked)
+    if (getcwd(home_dir_path, sizeof(home_dir_path)) == NULL) {
+        perror("getcwd() error");
+        return 1; // Exit if we can't get the starting directory
+    }
 
     load_history();
 
