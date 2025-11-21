@@ -1,8 +1,20 @@
-g 
-grep dee file.txt
-grep dee < file.txt
-grep dee < file.txt > smt.txt
-cat smt.txt
-grep dee < file.txt >> smt.txt
-pwd
-sleep 30 &
+history
+ls
+history
+echo Naagin > out.txt
+ls > out.txt
+grep include < main.c > out.txt
+grep include > out.txt < history.c
+sleep 10 &
+sleep 30 
+sleep 100 &
+sleep 10
+ps -a
+sleep 1 &
+sle
+sleep 5 &
+sleep 10
+sleep 1 &
+ps -a
+sleep 3 &
+sleep 10

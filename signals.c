@@ -32,7 +32,7 @@ void handle_sigchld(int sig) {
             }
         }
     }
-    if (re_prompt) {
+    if (re_prompt && foreground_pid == -1) {
         print_shell_prompt();
     }
 }
